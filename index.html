@@ -189,14 +189,32 @@ async function uploadTemplate(){
     const encodedHtml =
         btoa(unescape(encodeURIComponent(html)));
 
+    const check = await fetch(
+        `https://api.github.com/repos/${username}/${repo}/contents/${name}.html`
+    );
+
+    let sha = null;
+
+    if(check.status === 200){
+        const data = await check.json();
+        sha = data.sha;
+    }
+
     await githubRequest(
         `${name}.html`,
         'PUT',
         {
             message:`upload ${name}.html`,
-            content:encodedHtml
+            content:encodedHtml,
+            sha: sha ? sha : undefined
         }
     );
+
+    if(!result.content){
+    alert("HTML gagal upload!");
+    console.log(result);
+    return;
+    }
 
     // IMAGE
 
