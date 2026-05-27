@@ -210,11 +210,17 @@ async function uploadTemplate(){
         }
     );
 
-    if(!result.content){
-    alert("HTML gagal upload!");
-    console.log(result);
-    return;
-    }
+    const result = await githubRequest(
+    `${name}.html`,
+    'PUT',
+    {
+        message:`upload ${name}.html`,
+        content:encodedHtml,
+        sha: sha ? sha : undefined
+        }
+    );
+
+    console.log("upload result:", result);
 
     // IMAGE
 
