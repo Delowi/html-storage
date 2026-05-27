@@ -225,49 +225,40 @@ async function uploadTemplate(){
 
 async function loadTemplates(){
 
-    const cards =
-        document.getElementById('cards');
+    const cards = document.getElementById('cards');
+    cards.innerHTML = '';
 
-    cards.innerHTML='';
+    try {
 
-    try{
+        // ambil semua file repo
+        const response = await githubRequest('');
 
-        const response =
-            await githubRequest('');
+        const htmlFiles = response.filter(file =>
+            file.name.endsWith('.html') &&
+            file.name !== 'index.html'
+        );
 
-        const htmlFiles =
-            response.filter(file=>
-                file.name.endsWith('.html') &&
-                file.name !== 'index.html'
+        htmlFiles.forEach(file => {
+
+            const name = file.name.replace('.html','');
+
+            // cari thumbnail (lebih fleksibel)
+            const image = response.find(img =>
+                img.name.includes(name) &&
+                img.name.startsWith('thumb-')
             );
 
-        htmlFiles.forEach(file=>{
-
-            const name =
-                file.name.replace('.html','');
-
-            const image =
-                response.find(img=>
-                    img.name.startsWith(`thumb-${name}`)
-                );
-
+            // URL LIVE HARUS PAKAI /projects/
             const liveUrl =
-                `https://${username}.github.io/${repo}/${file.name}`;
+                `https://${username}.github.io/${repo}/projects/${file.name}`;
 
             cards.innerHTML += `
-
             <div class="bg-slate-800 rounded-3xl overflow-hidden">
 
-                ${
-                    image
-                    ?
-                    `<img
-                        src="${image.download_url}"
-                        class="w-full h-52 object-cover"
-                    >`
-                    :
-                    ''
-                }
+                ${image ? `
+                    <img src="${image.download_url}"
+                    class="w-full h-52 object-cover">
+                ` : ''}
 
                 <div class="p-5">
 
@@ -303,13 +294,11 @@ async function loadTemplates(){
                 </div>
 
             </div>
-
             `;
         });
 
-    }catch(err){
-
-        console.log(err);
+    } catch(err){
+        console.log('LOAD ERROR:', err);
     }
 }
 
