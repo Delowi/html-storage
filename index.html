@@ -64,63 +64,48 @@ async function loadTemplates(){
     const cards = document.getElementById("cards");
     cards.innerHTML = "";
 
-    const htmlRes = await fetch(
-        `https://api.github.com/repos/${username}/${repo}/contents/projects`
-    );
+    try {
 
-    const imgRes = await fetch(
-        `https://api.github.com/repos/${username}/${repo}/contents/thumbs`
-    );
+        // ambil SEMUA file root repo dulu (fallback aman)
+        const res = await fetch(
+            "https://api.github.com/repos/Delowi/html-storage/contents"
+        );
 
-    htmlList = await htmlRes.json();
-    imgList = await imgRes.json();
+        const files = await res.json();
 
-    htmlList.forEach(file => {
+        const htmlFiles = files.filter(f =>
+            f.name.endsWith(".html") &&
+            f.name !== "index.html"
+        );
 
-        if(!file.name.endsWith(".html")) return;
+        htmlFiles.forEach(file => {
 
-        const name = file.name.replace(".html","");
-        const img = imgList.find(i => i.name.includes(name));
+            const name = file.name.replace(".html","");
 
-        const imgUrl = img ? img.download_url : "";
+            const liveUrl =
+            `https://delowi.github.io/html-storage/${file.name}`;
 
-        const liveUrl =
-        `https://${username}.github.io/${repo}/projects/${file.name}`;
-
-        cards.innerHTML += `
-        <div class="bg-slate-800 rounded-2xl overflow-hidden">
-
-            ${imgUrl ? `
-            <img src="${imgUrl}" class="w-full h-52 object-cover">
-            ` : ""}
-
-            <div class="p-5">
+            cards.innerHTML += `
+            <div class="bg-slate-800 p-5 rounded-2xl">
 
                 <h2 class="text-xl font-bold mb-3">${name}</h2>
 
-                <div class="flex flex-wrap gap-2">
+                <button onclick="window.open('${liveUrl}')"
+                class="bg-blue-500 px-3 py-2 rounded-xl">
+                    OPEN
+                </button>
 
-                    <button onclick="window.open('${liveUrl}')"
-                    class="bg-blue-500 px-3 py-2 rounded-xl">
-                        OPEN
-                    </button>
+                <button onclick="copyHtml('${file.download_url}')"
+                class="bg-yellow-500 text-black px-3 py-2 rounded-xl">
+                    COPY
+                </button>
 
-                    <button onclick="copyHtml('${file.download_url}')"
-                    class="bg-yellow-500 text-black px-3 py-2 rounded-xl">
-                        COPY
-                    </button>
+            </div>`;
+        });
 
-                    <button onclick="deleteFile('${file.path}')"
-                    class="bg-red-500 px-3 py-2 rounded-xl">
-                        DELETE
-                    </button>
-
-                </div>
-
-            </div>
-        </div>
-        `;
-    });
+    } catch(err){
+        console.log(err);
+    }
 }
 
 /* =========================
