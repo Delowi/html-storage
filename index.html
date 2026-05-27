@@ -225,121 +225,92 @@ async function uploadTemplate(){
 
 async function loadTemplates(){
 
-    const cards = document.getElementById("cards");
-    cards.innerHTML = "";
+    const cards =
+        document.getElementById('cards');
 
-    // 1. ambil file HTML
-    const htmlRes = await fetch(
-        "https://api.github.com/repos/Delowi/html-storage/contents/projects"
-    );
+    cards.innerHTML='';
 
-    const htmlFiles = await htmlRes.json();
+    try{
 
-    // 2. ambil file gambar
-    const imgRes = await fetch(
-        "https://api.github.com/repos/Delowi/html-storage/contents/thumbs"
-    );
+        const response =
+            await githubRequest('');
 
-    const imgFiles = await imgRes.json();
+        const htmlFiles =
+            response.filter(file=>
+                file.name.endsWith('.html') &&
+                file.name !== 'index.html'
+            );
 
-    // 3. render card
-    htmlFiles.forEach(file => {
+        htmlFiles.forEach(file=>{
 
-        const name = file.name.replace(".html","");
+            const name =
+                file.name.replace('.html','');
 
-        const img = imgFiles.find(i =>
-            i.name.includes(name)
-        );
+            const image =
+                response.find(img=>
+                    img.name.startsWith(`thumb-${name}`)
+                );
 
-        const imgUrl = img
-            ? img.download_url
-            : "";
+            const liveUrl =
+                `https://${username}.github.io/${repo}/${file.name}`;
 
-        const liveUrl =
-            `https://delowi.github.io/html-storage/projects/${file.name}`;
+            cards.innerHTML += `
 
-        cards.innerHTML += `
-        
-        <div class="bg-slate-800 rounded-2xl overflow-hidden">
+            <div class="bg-slate-800 rounded-3xl overflow-hidden">
 
-            ${imgUrl ? `
-            <img src="${imgUrl}" class="w-full h-52 object-cover">
-            ` : ""}
+                ${
+                    image
+                    ?
+                    `<img
+                        src="${image.download_url}"
+                        class="w-full h-52 object-cover"
+                    >`
+                    :
+                    ''
+                }
 
-            <div class="p-5">
+                <div class="p-5">
 
-                <h2 class="text-xl font-bold mb-3">
-                    ${name}
-                </h2>
+                    <h2 class="text-2xl font-bold mb-5">
+                        ${name}
+                    </h2>
 
-                <div class="flex gap-2 flex-wrap">
+                    <div class="flex flex-wrap gap-2">
 
-                    <button
-                        onclick="window.open('${liveUrl}')"
-                        class="bg-blue-500 px-3 py-2 rounded-xl"
-                    >
-                        OPEN
-                    </button>
+                        <button
+                            onclick="window.open('${liveUrl}')"
+                            class="bg-blue-500 px-4 py-2 rounded-xl"
+                        >
+                            OPEN
+                        </button>
 
-                    <button
-                        onclick="copyHtml('${file.download_url}')"
-                        class="bg-yellow-500 text-black px-3 py-2 rounded-xl"
-                    >
-                        COPY
-                    </button>
+                        <button
+                            onclick="copyHtml('${file.download_url}')"
+                            class="bg-yellow-500 text-black px-4 py-2 rounded-xl"
+                        >
+                            COPY
+                        </button>
 
-                    <button
-                        onclick="deleteFile('${file.path}')"
-                        class="bg-red-500 px-3 py-2 rounded-xl"
-                    >
-                        DELETE
-                    </button>
+                        <button
+                            onclick="deleteTemplate('${file.name}','${image ? image.name : ''}')"
+                            class="bg-red-500 px-4 py-2 rounded-xl"
+                        >
+                            DELETE
+                        </button>
+
+                    </div>
 
                 </div>
 
             </div>
 
-        </div>
-        `;
-    });
-}
+            `;
+        });
 
-async function deleteFile(path){
+    }catch(err){
 
-    const token = document.getElementById("token").value;
-
-    if(!token){
-        alert("Masukkan token dulu untuk delete");
-        return;
+        console.log(err);
     }
-
-    if(!confirm("Hapus file ini?")) return;
-
-    // ambil sha file
-    const fileRes = await fetch(
-        `https://api.github.com/repos/Delowi/html-storage/contents/${path}`
-    );
-
-    const fileData = await fileRes.json();
-
-    await fetch(
-        `https://api.github.com/repos/Delowi/html-storage/contents/${path}`,
-        {
-            method:"DELETE",
-            headers:{
-                Authorization:`token ${token}`,
-                Accept:"application/vnd.github+json"
-            },
-            body: JSON.stringify({
-                message:"delete file",
-                sha:fileData.sha
-            })
-        }
-    );
-
-    alert("Berhasil dihapus");
-
-    loadTemplates();
 }
 
 async function copyHtml(url){
