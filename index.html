@@ -184,60 +184,6 @@ transform:rotate(360deg);
 
 </div>
 
-<!-- EDIT MODAL -->
-
-<div
-id="editorModal"
-class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
-
-    <div class="bg-slate-800 w-11/12 max-w-6xl rounded-3xl p-6">
-
-        <h2 class="text-3xl font-bold mb-6">
-            EDIT TEMPLATE
-        </h2>
-
-        <input
-        id="editTemplateName"
-        class="hidden">
-
-        <label class="font-bold">
-            LANDING HTML
-        </label>
-
-        <textarea
-        id="editLanding"
-        class="w-full bg-slate-900 rounded-xl p-4 h-64 mt-2 mb-6 outline-none"
-        ></textarea>
-
-        <label class="font-bold">
-            AMP HTML
-        </label>
-
-        <textarea
-        id="editAmp"
-        class="w-full bg-slate-900 rounded-xl p-4 h-64 mt-2 outline-none"
-        ></textarea>
-
-        <div class="flex justify-end gap-3 mt-6">
-
-            <button
-            onclick="closeEditor()"
-            class="bg-gray-600 px-6 py-3 rounded-xl">
-                BATAL
-            </button>
-
-            <button
-            onclick="saveEdit()"
-            class="bg-emerald-500 px-6 py-3 rounded-xl">
-                SIMPAN
-            </button>
-
-        </div>
-
-    </div>
-
-</div>
-
 <script>
 
 const username = "Delowi";
@@ -561,39 +507,6 @@ async function copyHtml(url){
     showToast("COPY TEROS COPY TERUS KAMPANG","#3b82f6");
 }
 
-async function editTemplate(
-    htmlName,
-    ampName
-){
-
-    const landingRes = await fetch(
-        `https://raw.githubusercontent.com/${username}/${repo}/main/${htmlName}?t=${Date.now()}`
-    );
-
-    const landingHtml =
-        await landingRes.text();
-
-    let ampHtml = "";
-
-    if(ampName){
-
-        const ampRes = await fetch(
-            `https://raw.githubusercontent.com/${username}/${repo}/main/${ampName}?t=${Date.now()}`
-        );
-
-        ampHtml =
-            await ampRes.text();
-
-    }
-
-    console.log("Landing HTML:");
-    console.log(landingHtml);
-
-    console.log("AMP HTML:");
-    console.log(ampHtml);
-
-}
-
 let currentEditFile = "";
 let currentAmpFile = "";
 
@@ -674,24 +587,22 @@ async function saveEdit(){
     const file =
     await githubRequest(currentEditFile);
 
+    console.log("Isi textarea AMP:", amp);
+
     const encoded =
     btoa(unescape(encodeURIComponent(html)));
 
-    const result =
-    await githubRequest(
+    console.log("currentEditFile:", currentEditFile);
+    console.log("currentAmpFile:", currentAmpFile);
+    console.log("AMP isi:", amp);
 
+    const result = await githubRequest(
         currentEditFile,
-
         "PUT",
-
         {
-
             message:`edit ${currentEditFile}`,
-
             content:encoded,
-
             sha:file.sha
-
         }
 
     );
@@ -699,48 +610,31 @@ async function saveEdit(){
     console.log(result);
 
     if(amp.trim() !== ""){
-
         const encodedAmp =
         btoa(unescape(encodeURIComponent(amp)));
-
         let ampSha = undefined;
-
         if(currentAmpFile){
-
             const ampFile =
             await githubRequest(currentAmpFile);
-
             if(ampFile.sha){
-
                 ampSha = ampFile.sha;
-
             }
 
         }else{
-
             currentAmpFile =
             currentEditFile.replace(".html","-amp.html");
-
         }
 
-        await githubRequest(
-
+        const ampResult = await githubRequest(
             currentAmpFile,
-
             "PUT",
-
             {
-
                 message:`edit ${currentAmpFile}`,
-
                 content:encodedAmp,
-
                 sha:ampSha
-
             }
-
         );
-
+        console.log("AMP RESULT:", ampResult);
     }
 
     if(result.content){
