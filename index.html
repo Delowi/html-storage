@@ -201,16 +201,6 @@ async function uploadTemplate(){
         sha = data.sha;
     }
 
-    await githubRequest(
-        `${name}.html`,
-        'PUT',
-        {
-            message:`upload ${name}.html`,
-            content:encodedHtml,
-            sha: sha ? sha : undefined
-        }
-    );
-
     const result = await githubRequest(
     `${name}.html`,
     'PUT',
@@ -312,6 +302,11 @@ async function loadTemplates(){
                             COPY
                         </button>
 
+                        <button onclick="editTemplate('${file.name}')"
+                            class="bg-green-500 px-4 py-2 rounded-xl">
+                            EDIT
+                        </button>
+
                         <button onclick="deleteTemplate('${file.name}','${img ? img.name : ''}')"
                         class="bg-red-500 px-4 py-2 rounded-xl">
                             DELETE
@@ -340,6 +335,96 @@ async function copyHtml(url){
     navigator.clipboard.writeText(text);
 
     alert('COPY TEROS COPY TERUS KAMPANG');
+}
+
+//====================
+// EDIT TEMPLATE
+//====================
+
+let currentEditFile = "";
+
+async function editTemplate(fileName){
+
+    currentEditFile = fileName;
+
+    const data = await githubRequest(fileName);
+
+    if(!data.content){
+
+        alert("Token salah atau file tidak ditemukan");
+
+        console.log(data);
+
+        return;
+
+    }
+
+    const html = decodeURIComponent(
+
+        escape(
+
+            atob(data.content.replace(/\n/g,''))
+
+        )
+
+    );
+
+    document.getElementById("editHtml").value = html;
+    document.getElementById("previewFrame").srcdoc = html;
+    document.getElementById("editModal").style.display = "block";
+
+}
+
+function closeEdit(){
+
+    document.getElementById("editModal").style.display = "none";
+
+}
+
+async function saveEdit(){
+
+    const html =
+    document.getElementById("editHtml").value;
+
+    const file =
+    await githubRequest(currentEditFile);
+
+    const encoded =
+    btoa(unescape(encodeURIComponent(html)));
+
+    const result =
+    await githubRequest(
+
+        currentEditFile,
+
+        "PUT",
+
+        {
+
+            message:`edit ${currentEditFile}`,
+
+            content:encoded,
+
+            sha:file.sha
+
+        }
+
+    );
+
+    console.log(result);
+
+    if(result.content){
+
+        alert("Berhasil disimpan");
+
+        closeEdit();
+
+    }else{
+
+        alert("Gagal menyimpan");
+
+    }
+
 }
 
 async function deleteTemplate(
@@ -385,8 +470,66 @@ async function deleteTemplate(
 
     loadTemplates();
 }
+    document.addEventListener("input",(e)=>{
+
+        if(e.target.id!="editHtml") return;
+
+        document.getElementById("previewFrame").srcdoc =
+            e.target.value;
+
+});
 
 </script>
+<div id="editModal" 
+style="
+display:none;
+position:fixed;
+left:0;
+top:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.8);
+z-index:999;
+">
 
+<div style="
+width:90%;
+height:90%;
+background:#1e293b;
+margin:auto;
+margin-top:2%;
+border-radius:20px;
+padding:20px;
+display:flex;
+flex-direction:column;
+">
+
+    <h2 class="text-3xl font-bold mb-4">
+    PREVIEW KONTEN
+    </h2>
+    <div class="flex gap-4 flex-1">
+    <textarea
+    id="editHtml"
+    class="flex-1 bg-slate-900 rounded-xl p-5 outline-none"
+    ></textarea>
+    <iframe
+    id="previewFrame"
+    class="flex-1 bg-white rounded-xl"
+    ></iframe>
+    </div>
+    <div class="mt-4 flex gap-3">
+    <button
+    onclick="saveEdit()"
+    class="bg-green-500 px-6 py-3 rounded-xl">
+    SIMPAN
+    </button>
+    <button
+    onclick="closeEdit()"
+    class="bg-red-500 px-6 py-3 rounded-xl">
+    BATAL
+    </button>
+   </div>
+  </div>
+ </div>
 </body>
 </html>
