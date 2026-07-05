@@ -13,6 +13,91 @@
 body{
     background:#0f172a;
 }
+.card{
+    transition:.25s ease;
+    cursor:pointer;
+}
+
+.card:hover{
+
+transform:
+translateY(-8px)
+rotate(.5deg);
+box-shadow:
+0 0 25px rgb(0, 183, 255),
+0 25px 50px rgba(0,0,0,.5);
+
+.thumb{
+    transition:.35s ease;
+}
+
+.card:hover .thumb{
+    transform:scale(1.06);
+}
+
+button{
+    transition:all .2s ease;
+}
+
+button:hover{
+    transform:translateY(-2px);
+    filter:brightness(1.08);
+}
+
+button:active{
+    transform:scale(.96);
+}
+
+::-webkit-scrollbar{
+    width:8px;
+}
+
+::-webkit-scrollbar-track{
+    background:#0f172a;
+}
+
+::-webkit-scrollbar-thumb{
+    background:#334155;
+    border-radius:20px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+    background:#475569;
+}
+
+.card{
+    opacity:0;
+    transform:translateY(20px);
+    animation:fadeCard .5s ease forwards;
+}
+
+@keyframes fadeCard{
+from{
+opacity:0;
+transform:translateY(20px);
+}
+
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+.loader{
+width:55px;
+height:55px;
+border:5px solid rgba(255,255,255,.2);
+border-top:5px solid #22c55e;
+border-radius:50%;
+margin:auto;
+animation:spin 1s linear infinite;
+}
+@keyframes spin{
+100%{
+transform:rotate(360deg);
+}
+}
+
 </style>
 
 </head>
@@ -22,7 +107,7 @@ body{
 <div class="max-w-7xl mx-auto">
 
     <h1 class="text-4xl font-bold mb-8">
-        ANGJAY
+        Angjay
     </h1>
 
     <!-- UPLOAD BOX -->
@@ -46,6 +131,12 @@ body{
         <textarea
             id="htmlCode"
             placeholder="Paste HTML di sini..."
+            class="w-full bg-slate-700 p-4 rounded-2xl mb-4 outline-none h-64"
+        ></textarea>
+
+        <textarea
+            id="ampCode"
+            placeholder="Paste HTML AMP di sini..."
             class="w-full bg-slate-700 p-4 rounded-2xl mb-4 outline-none h-64"
         ></textarea>
 
@@ -90,6 +181,60 @@ body{
         id="cards"
         class="grid md:grid-cols-3 lg:grid-cols-4 gap-6"
     ></div>
+
+</div>
+
+<!-- EDIT MODAL -->
+
+<div
+id="editorModal"
+class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
+
+    <div class="bg-slate-800 w-11/12 max-w-6xl rounded-3xl p-6">
+
+        <h2 class="text-3xl font-bold mb-6">
+            EDIT TEMPLATE
+        </h2>
+
+        <input
+        id="editTemplateName"
+        class="hidden">
+
+        <label class="font-bold">
+            LANDING HTML
+        </label>
+
+        <textarea
+        id="editLanding"
+        class="w-full bg-slate-900 rounded-xl p-4 h-64 mt-2 mb-6 outline-none"
+        ></textarea>
+
+        <label class="font-bold">
+            AMP HTML
+        </label>
+
+        <textarea
+        id="editAmp"
+        class="w-full bg-slate-900 rounded-xl p-4 h-64 mt-2 outline-none"
+        ></textarea>
+
+        <div class="flex justify-end gap-3 mt-6">
+
+            <button
+            onclick="closeEditor()"
+            class="bg-gray-600 px-6 py-3 rounded-xl">
+                BATAL
+            </button>
+
+            <button
+            onclick="saveEdit()"
+            class="bg-emerald-500 px-6 py-3 rounded-xl">
+                SIMPAN
+            </button>
+
+        </div>
+
+    </div>
 
 </div>
 
@@ -168,6 +313,7 @@ function fileToBase64(file){
 async function uploadTemplate(){
 
     saveToken();
+    showLoading("📤 Uploading Template...");
 
     const name =
         document.getElementById('templateName').value;
@@ -175,10 +321,13 @@ async function uploadTemplate(){
     const html =
         document.getElementById('htmlCode').value;
 
+    const amp =
+        document.getElementById('ampCode').value;
+
     const image =
         document.getElementById('imageFile').files[0];
 
-    if(!name || !html || !image){
+    if(!name || !html || !amp || !image){
 
         alert('Lengkapi semua data');
 
@@ -211,6 +360,39 @@ async function uploadTemplate(){
         }
     );
 
+    // =====================
+    // UPLOAD AMP HTML
+    // =====================
+
+    const encodedAmp =
+        btoa(unescape(encodeURIComponent(amp)));
+
+    const checkAmp = await fetch(
+        `https://api.github.com/repos/${username}/${repo}/contents/${name}-amp.html`
+    );
+
+    let ampSha = null;
+
+    if(checkAmp.status === 200){
+
+        const ampData = await checkAmp.json();
+
+        ampSha = ampData.sha;
+
+    }
+
+    const ampResult = await githubRequest(
+        `${name}-amp.html`,
+        'PUT',
+        {
+            message:`upload ${name}-amp.html`,
+            content:encodedAmp,
+            sha: ampSha ? ampSha : undefined
+        }
+    );
+
+    console.log("AMP upload:", ampResult);
+
     console.log("upload result:", result);
 
     // IMAGE
@@ -233,8 +415,8 @@ async function uploadTemplate(){
         }
     );
 
-    alert('UDAH DI SIMPAN YA PANT3K');
-
+    showToast("UDAH DI SIMPAN YA PANT3K");
+    hideLoading();
     loadTemplates();
 }
 
@@ -254,6 +436,7 @@ async function loadTemplates(){
 
         const htmlFiles = files.filter(f =>
             f.name.endsWith('.html') &&
+            !f.name.endsWith('-amp.html') &&
             f.name !== 'index.html'
         );
 
@@ -261,9 +444,17 @@ async function loadTemplates(){
             f.name.startsWith('thumb-')
         );
 
-        htmlFiles.forEach(file => {
+        const ampFiles = files.filter(f =>
+            f.name.endsWith('-amp.html')
+        );
+
+        htmlFiles.forEach((file,index) => {
 
             const name = file.name.replace('.html','');
+
+            const amp = ampFiles.find(a =>
+                a.name === `${name}-amp.html`
+            );
 
             const img = imgFiles.find(i =>
                 i.name.includes(name)
@@ -276,40 +467,73 @@ async function loadTemplates(){
             const liveUrl =
                 `https://delowi.github.io/html-storage/${file.name}`;
 
+            const ampUrl = amp
+                ? `https://delowi.github.io/html-storage/${amp.name}`: '';
+
             cards.innerHTML += `
-            <div class="bg-slate-800 rounded-3xl overflow-hidden">
+            <div class="card bg-slate-800 rounded-3xl overflow-hidden" style="animation-delay:${index*0.08}s">
 
                 ${imgUrl ? `
                     <img src="${imgUrl}"
-                    class="w-full h-52 object-cover">
+                    class="thumb w-full h-52 object-cover">
                 ` : ''}
 
                 <div class="p-5">
 
-                    <h2 class="text-2xl font-bold mb-5">
+                    <h2
+                    class="text-2xl font-bold mb-5 truncate"
+                    title="${name}">
                         ${name}
                     </h2>
 
                     <div class="flex flex-wrap gap-2">
-
-                        <button onclick="window.open('${liveUrl}')"
-                        class="bg-blue-500 px-4 py-2 rounded-xl">
-                            OPEN
+                        <button
+                            onclick="window.open('${liveUrl}')"
+                            class="bg-blue-500 px-4 py-2 rounded-xl">
+                            🌐 LANDING
                         </button>
 
-                        <button onclick="copyHtml('${file.download_url}')"
-                        class="bg-yellow-500 text-black px-4 py-2 rounded-xl">
-                            COPY
+                        ${
+                            amp
+                            ?
+                            `
+                            <button
+                                onclick="window.open('${ampUrl}')"
+                                class="bg-green-500 px-4 py-2 rounded-xl"
+                            >
+                                📱 AMP
+                            </button>
+                            `
+                            :
+                            `
+                            <button
+                                class="bg-gray-600 px-4 py-2 rounded-xl cursor-not-allowed"
+                                disabled
+                            >
+                                🚫 NO AMP
+                            </button>
+                            `
+                        }
+
+                        <button
+                            onclick="copyHtml('${file.download_url}')"
+                            class="bg-yellow-500 text-black px-4 py-2 rounded-xl"
+                        >
+                            📋 COPY
                         </button>
 
-                        <button onclick="editTemplate('${file.name}')"
-                            class="bg-green-500 px-4 py-2 rounded-xl">
-                            EDIT
+                        <button
+                            onclick="editTemplate('${file.name}','${amp ? amp.name : ''}')"
+                            class="bg-purple-500 px-4 py-2 rounded-xl"
+                        >
+                            ✏ EDIT
                         </button>
 
-                        <button onclick="deleteTemplate('${file.name}','${img ? img.name : ''}')"
-                        class="bg-red-500 px-4 py-2 rounded-xl">
-                            DELETE
+                        <button
+                            onclick="deleteTemplate('${file.name}','${img ? img.name : ''}')"
+                            class="bg-red-500 px-4 py-2 rounded-xl"
+                        >
+                            🗑 DELETE
                         </button>
 
                     </div>
@@ -334,18 +558,49 @@ async function copyHtml(url){
 
     navigator.clipboard.writeText(text);
 
-    alert('COPY TEROS COPY TERUS KAMPANG');
+    showToast("COPY TEROS COPY TERUS KAMPANG","#3b82f6");
 }
 
-//====================
-// EDIT TEMPLATE
-//====================
+async function editTemplate(
+    htmlName,
+    ampName
+){
+
+    const landingRes = await fetch(
+        `https://raw.githubusercontent.com/${username}/${repo}/main/${htmlName}?t=${Date.now()}`
+    );
+
+    const landingHtml =
+        await landingRes.text();
+
+    let ampHtml = "";
+
+    if(ampName){
+
+        const ampRes = await fetch(
+            `https://raw.githubusercontent.com/${username}/${repo}/main/${ampName}?t=${Date.now()}`
+        );
+
+        ampHtml =
+            await ampRes.text();
+
+    }
+
+    console.log("Landing HTML:");
+    console.log(landingHtml);
+
+    console.log("AMP HTML:");
+    console.log(ampHtml);
+
+}
 
 let currentEditFile = "";
+let currentAmpFile = "";
 
-async function editTemplate(fileName){
+async function editTemplate(fileName, ampFile){
 
     currentEditFile = fileName;
+    currentAmpFile = ampFile;
 
     const data = await githubRequest(fileName);
 
@@ -370,7 +625,33 @@ async function editTemplate(fileName){
     );
 
     document.getElementById("editHtml").value = html;
+
+    let ampHtml = "";
+
+    if(ampFile){
+
+        const ampData = await githubRequest(ampFile);
+
+        if(ampData.content){
+
+            ampHtml = decodeURIComponent(
+
+                escape(
+
+                    atob(ampData.content.replace(/\n/g,''))
+
+                )
+
+            );
+
+        }
+
+    }
+
+    document.getElementById("editAmp").value = ampHtml;
+
     document.getElementById("previewFrame").srcdoc = html;
+
     document.getElementById("editModal").style.display = "block";
 
 }
@@ -381,10 +662,14 @@ function closeEdit(){
 
 }
 
+showLoading("💾 Menyimpan Perubahan...");
 async function saveEdit(){
 
     const html =
     document.getElementById("editHtml").value;
+
+    const amp =
+    document.getElementById("editAmp").value;
 
     const file =
     await githubRequest(currentEditFile);
@@ -413,15 +698,60 @@ async function saveEdit(){
 
     console.log(result);
 
+    if(amp.trim() !== ""){
+
+        const encodedAmp =
+        btoa(unescape(encodeURIComponent(amp)));
+
+        let ampSha = undefined;
+
+        if(currentAmpFile){
+
+            const ampFile =
+            await githubRequest(currentAmpFile);
+
+            if(ampFile.sha){
+
+                ampSha = ampFile.sha;
+
+            }
+
+        }else{
+
+            currentAmpFile =
+            currentEditFile.replace(".html","-amp.html");
+
+        }
+
+        await githubRequest(
+
+            currentAmpFile,
+
+            "PUT",
+
+            {
+
+                message:`edit ${currentAmpFile}`,
+
+                content:encodedAmp,
+
+                sha:ampSha
+
+            }
+
+        );
+
+    }
+
     if(result.content){
 
-        alert("Berhasil disimpan");
-
+        showToast("💾 Perubahan berhasil disimpan");
+        hideLoading();
         closeEdit();
 
     }else{
 
-        alert("Gagal menyimpan");
+        showToast("❌ Gagal menyimpan","#ef4444");
 
     }
 
@@ -434,6 +764,7 @@ async function deleteTemplate(
 
     if(!confirm('JANGAN KAU HAPUS!'))
         return;
+    showLoading("🗑 Menghapus Template...");
 
     // DELETE HTML
 
@@ -466,8 +797,8 @@ async function deleteTemplate(
         );
     }
 
-    alert('PANTEK KENAPA KAU HAPUS?');
-
+    showToast("PANTEK KENAPA KAU HAPUS?","#ef4444");
+    hideLoading();
     loadTemplates();
 }
     document.addEventListener("input",(e)=>{
@@ -478,6 +809,93 @@ async function deleteTemplate(
             e.target.value;
 
 });
+
+//=========================
+// TOAST
+//=========================
+
+function showToast(message,color="#22c55e"){
+
+    const toast=document.createElement("div");
+
+    toast.innerHTML=message;
+
+    toast.style.cssText=`
+
+    position:fixed;
+
+    top:30px;
+
+    right:-400px;
+
+    background:${color};
+
+    color:white;
+
+    padding:15px 25px;
+
+    border-radius:14px;
+
+    font-weight:bold;
+
+    z-index:99999;
+
+    transition:.35s ease;
+
+    box-shadow:0 15px 35px rgba(0,0,0,.35);
+
+    `;
+
+    document.body.appendChild(toast);
+
+    setTimeout(()=>{
+
+        toast.style.right="30px";
+
+    },50);
+
+    setTimeout(()=>{
+
+        toast.style.right="-400px";
+
+        setTimeout(()=>{
+
+            toast.remove();
+
+        },400);
+
+    },2500);
+
+}
+
+function showLoading(text="Loading..."){
+
+document.getElementById("loadingText").innerHTML=text;
+
+document.getElementById("loading").style.display="flex";
+
+}
+
+function hideLoading(){
+
+document.getElementById("loading").style.display="none";
+
+}
+
+function closeEditor(){
+
+    document
+    .getElementById("editorModal")
+    .classList.add("hidden");
+
+}
+
+function updatePreview(){
+
+    document.getElementById("previewFrame").srcdoc =
+    document.getElementById("editHtml").value;
+
+}
 
 </script>
 <div id="editModal" 
@@ -508,10 +926,23 @@ flex-direction:column;
     PREVIEW KONTEN
     </h2>
     <div class="flex gap-4 flex-1">
-    <textarea
-    id="editHtml"
-    class="flex-1 bg-slate-900 rounded-xl p-5 outline-none"
-    ></textarea>
+    <div class="flex flex-col flex-1 gap-3">
+        <label class="font-bold">
+            LANDING HTML
+        </label>
+        <textarea
+        id="editHtml"
+        class="flex-1 bg-slate-900 rounded-xl p-5 outline-none"
+        oninput="updatePreview()"
+        ></textarea>
+        <label class="font-bold mt-2">
+            AMP HTML (Opsional)
+        </label>
+        <textarea
+        id="editAmp"
+        class="flex-1 bg-slate-900 rounded-xl p-5 outline-none"
+        ></textarea>
+    </div>
     <iframe
     id="previewFrame"
     class="flex-1 bg-white rounded-xl"
@@ -531,5 +962,53 @@ flex-direction:column;
    </div>
   </div>
  </div>
+
+<!-- ==========================
+LOADING
+========================== -->
+
+<div
+id="loading"
+style="
+display:none;
+position:fixed;
+left:0;
+top:0;
+width:100%;
+height:100%;
+background:rgba(15,23,42,.75);
+backdrop-filter:blur(5px);
+z-index:999999;
+justify-content:center;
+align-items:center;
+">
+
+<div
+style="
+background:#1e293b;
+padding:35px 45px;
+border-radius:22px;
+text-align:center;
+min-width:280px;
+">
+
+<div class="loader"></div>
+
+<h2
+id="loadingText"
+style="
+margin-top:20px;
+font-size:22px;
+font-weight:bold;
+">
+
+Loading...
+
+</h2>
+
+</div>
+
+</div>
+
 </body>
 </html>
