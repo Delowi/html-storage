@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html amp lang="id">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <title>SUSTER123 | Teknologi Animasi Modern untuk Hiburan Digital Masa Kini</title>
+    <meta name="description"
+        content="SUSTER123 menghadirkan konsep hiburan digital dengan visual animasi modern, navigasi praktis, serta desain futuristik yang nyaman digunakan." />
+    <link rel="canonical" href="https://suster123j.com/" />
+    <link rel="shortcut icon" href="https://meubelkayumurah.pics/wp-content/uploads/2026/06/iconsuster123.png" />
+    <link rel="preconnect" href="https://cdn.ampproject.org/">
+    <link rel="preload" as="script" href="https://cdn.ampproject.org/v0.js">
+    <script async src="https://cdn.ampproject.org/v0.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Orbitron:wght@700&display=swap"
+        rel="stylesheet">
+
+    <style amp-custom>
+        :root {
+            /* Tema Cyber-Dark Luxury (Merah, Emas, Hitam) */
+            --neon-red: #D90429;
+            --dark-red: #4A0008;
+            --gold-solid: #D4AF37;
+            --gold-light: #F9D976;
+            --black-obsidian: #050505;
+            /* Background gelap obsidian void dengan sentuhan merah di ujung */
+            --bg-gradient: linear-gradient(135deg, #050505 0%, #1c0005 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-gradient);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: 0.3s;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* === CONTAINER === */
+        #container {
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo-wrapper {
+            text-align: center;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .logo-img {
+            /* Shadow Emas Mewah */
+            filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.5));
+        }
+
+        h1.title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 18px;
+            text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 25px;
+            background: linear-gradient(to right, #fff, var(--gold-solid), #fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            /* Teks shadow Merah Neon */
+            text-shadow: 0 0 20px rgba(217, 4, 41, 0.7);
+            line-height: 1.4;
+            letter-spacing: 1px;
+        }
+
+        .hero-card {
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            /* Glow Merah di pinggir banner */
+            box-shadow: 0 0 30px rgba(217, 4, 41, 0.3), inset 0 0 15px rgba(217, 4, 41, 0.1);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .hero-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: skewX(-25deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                left: -100%;
+            }
+
+            20% {
+                left: 200%;
+            }
+
+            100% {
+                left: 200%;
+            }
+        }
+
+        .btn-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid transparent;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.8);
+        }
+
+        .btn-login {
+            /* Gradien Emas ke Merah */
+            background: linear-gradient(90deg, var(--gold-solid), var(--neon-red), var(--gold-solid));
+            background-size: 200% auto;
+            color: #ffffff;
+            animation: shimmer 3s linear infinite;
+        }
+
+        .btn-daftar {
+            /* Gradien Hitam ke Merah Gelap */
+            background: linear-gradient(90deg, var(--black-obsidian), var(--dark-red), var(--black-obsidian));
+            background-size: 200% auto;
+            color: var(--gold-light);
+            animation: shimmer 3s linear infinite reverse;
+            border-color: rgba(212, 175, 55, 0.4); /* Border Emas transparan */
+        }
+
+        .btn-alt {
+            /* Glassmorphism Merah Transparan */
+            background: rgba(217, 4, 41, 0.1);
+            color: var(--gold-solid);
+            border: 1px solid var(--gold-solid);
+            backdrop-filter: blur(5px);
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+            /* Hover glow Emas */
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.5);
+            color: #fff;
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            border-top: 1px solid rgba(217, 4, 41, 0.2);
+            padding-top: 15px;
+        }
+
+        .footer a {
+            color: var(--gold-solid);
+        }
+
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            /* Efek partikel Merah dan Emas melayang di background */
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(217, 4, 41, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(212, 175, 55, 0.1) 0%, transparent 40%);
+            pointer-events: none;
+        }
+    </style>
+
+    <style amp-boilerplate>
+        body {
+            -webkit-animation: -amp-start 8s steps(1, end) 0s 1 normal both;
+            -moz-animation: -amp-start 8s steps(1, end) 0s 1 normal both;
+            -ms-animation: -amp-start 8s steps(1, end) 0s 1 normal both;
+            animation: -amp-start 8s steps(1, end) 0s 1 normal both
+        }
+
+        @-webkit-keyframes -amp-start {
+            from {
+                visibility: hidden
+            }
+
+            to {
+                visibility: visible
+            }
+        }
+
+        @-moz-keyframes -amp-start {
+            from {
+                visibility: hidden
+            }
+
+            to {
+                visibility: visible
+            }
+        }
+
+        @-ms-keyframes -amp-start {
+            from {
+                visibility: hidden
+            }
+
+            to {
+                visibility: visible
+            }
+        }
+
+        @-o-keyframes -amp-start {
+            from {
+                visibility: hidden
+            }
+
+            to {
+                visibility: visible
+            }
+        }
+
+        @keyframes -amp-start {
+            from {
+                visibility: hidden
+            }
+
+            to {
+                visibility: visible
+            }
+        }
+    </style><noscript>
+        <style amp-boilerplate>
+            body {
+                -webkit-animation: none;
+                -moz-animation: none;
+                -ms-animation: none;
+                animation: none
+            }
+        </style>
+    </noscript>
+</head>
+
+<body>
+
+    <div class="bg-particles"></div>
+
+    <div id="container">
+
+        <div class="logo-wrapper">
+            <amp-img src="https://meubelkayumurah.pics/wp-content/uploads/2026/06/logosuster123.png" alt="logo" width="280"
+                height="70" layout="intrinsic" class="logo-img">
+            </amp-img>
+
+        </div>
+
+        <h1 class="title">BANDAR PALING GACOR 2026</h1>
+
+        <div class="hero-card">
+            <a href="https://suster123j.com/" target="_blank"><amp-img
+                    src="https://meubelkayumurah.pics/wp-content/uploads/2026/08/susterdfgdf.png" alt="slot777" width="600"
+                    height="600" layout="responsive">
+                </amp-img></a>
+        </div>
+
+        <div class="btn-list">
+            <a href="https://cutt.ly/GASSUSTER8" target="_blank" rel="nofollow" class="btn btn-login">
+                LOGIN PREMIUM
+            </a>
+            <a href="https://cutt.ly/GASSUSTER8" target="_blank" rel="nofollow" class="btn btn-daftar">
+                DAFTAR AKUN PRO
+            </a>
+            <a href="https://cutt.ly/GASSUSTER8" target="_blank" rel="nofollow" class="btn btn-alt">
+                LIVECHAT 24/7
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>@ 2026 SUSTER123 X Seo Chick. All Rights Reserved.</p>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
